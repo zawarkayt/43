@@ -9,11 +9,10 @@ CORS(app)
 
 # --- DB CONFIG ---
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://localhost/43country")
-# Railway gives postgres:// but SQLAlchemy needs postgresql://
-if DATABASE_URL.startswith("postgres://"):
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL or "sqlite:///43country.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "zawarkayt")
@@ -59,6 +58,27 @@ class News(db.Model):
         }
 
 
+class PowerPlant(db.Model):
+    __tablename__ = "power_plants"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    plant_type = db.Column(db.String(50), nullable=False)  # COAL_GENERATOR, BIOMASS_BURNER, FUEL_GENERATOR, NUCLEAR
+    power_mw = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(20), default="active")  # active, standby, offline
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "type": self.plant_type,
+            "power_mw": self.power_mw,
+            "status": self.status,
+            "status_text": "● РАБОТАЕТ" if self.status == "active" else ("● РЕЗЕРВ" if self.status == "standby" else "● ОТКЛЮЧЕНА"),
+            "status_color": "green" if self.status == "active" else ("yellow" if self.status == "standby" else "red")
+        }
+
+
 class EnergyStatus(db.Model):
     __tablename__ = "energy_status"
     id = db.Column(db.Integer, primary_key=True)
@@ -69,7 +89,7 @@ class EnergyStatus(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def to_dict(self):
-        reserve_pct = round(((self.production - self.consumption) / self.production) * 100) if self.production else 0
+        reserve_pct = round(((self.production - self.consumption) / self.production) * 100) if self.production and self.production > 0 else 0
         return {
             "status": self.status,
             "message": self.message,
@@ -109,6 +129,11 @@ def seed_defaults():
             body="Вторая угольная электростанция введена в эксплуатацию. Суммарная мощность — 1,240 МВт.",
             tag="ЭНЕРГЕТИКА"
         ))
+
+    if not PowerPlant.query.first():
+        db.session.add(PowerPlant(name="Угольная станция A-1", plant_type="COAL_GENERATOR", power_mw=450, status="active"))
+        db.session.add(PowerPlant(name="Угольная станция A-2", plant_type="COAL_GENERATOR", power_mw=450, status="active"))
+        db.session.add(PowerPlant(name="Биомасса B-1", plant_type="BIOMASS_BURNER", power_mw=340, status="standby"))
 
     if not EnergyStatus.query.first():
         db.session.add(EnergyStatus())
@@ -158,7 +183,13 @@ def get_citizens():
 @app.route("/api/energy", methods=["GET"])
 def get_energy():
     status = EnergyStatus.query.first()
-    return jsonify(status.to_dict())
+    plants = PowerPlant.query.all()
+    total_production = sum(p.power_mw for p in plants if p.status == "active")
+    return jsonify({
+        **status.to_dict(),
+        "total_production": total_production,
+        "plants": [p.to_dict() for p in plants]
+    })
 
 
 @app.route("/api/settings/<key>", methods=["GET"])
@@ -223,6 +254,68 @@ def delete_citizen(cid):
     return jsonify({"ok": True})
 
 
+# ========== POWER PLANT ADMIN ROUTES ==========
+
+@app.route("/api/admin/plants", methods=["POST"])
+def create_plant():
+    require_admin()
+    data = request.get_json()
+    if not data.get("name") or not data.get("type") or not data.get("power_mw"):
+        return jsonify({"error": "Заполни все поля"}), 400
+    
+    plant = PowerPlant(
+        name=data["name"],
+        plant_type=data["type"],
+        power_mw=int(data["power_mw"]),
+        status=data.get("status", "active")
+    )
+    db.session.add(plant)
+    db.session.commit()
+    
+    # Обновляем общую выработку в EnergyStatus
+    update_energy_production()
+    
+    return jsonify(plant.to_dict()), 201
+
+
+@app.route("/api/admin/plants/<int:pid>", methods=["DELETE"])
+def delete_plant(pid):
+    require_admin()
+    plant = PowerPlant.query.get_or_404(pid)
+    db.session.delete(plant)
+    db.session.commit()
+    
+    # Обновляем общую выработку в EnergyStatus
+    update_energy_production()
+    
+    return jsonify({"ok": True})
+
+
+@app.route("/api/admin/plants/<int:pid>/status", methods=["PUT"])
+def update_plant_status(pid):
+    require_admin()
+    data = request.get_json()
+    plant = PowerPlant.query.get_or_404(pid)
+    plant.status = data.get("status", plant.status)
+    db.session.commit()
+    
+    # Обновляем общую выработку в EnergyStatus
+    update_energy_production()
+    
+    return jsonify(plant.to_dict())
+
+
+def update_energy_production():
+    """Recalculate total production from all active plants and update EnergyStatus"""
+    plants = PowerPlant.query.filter_by(status="active").all()
+    total_production = sum(p.power_mw for p in plants)
+    
+    status = EnergyStatus.query.first()
+    if status:
+        status.production = total_production if total_production > 0 else 1
+        db.session.commit()
+
+
 @app.route("/api/admin/energy", methods=["POST"])
 def update_energy():
     require_admin()
@@ -232,8 +325,6 @@ def update_energy():
         status.status = data["status"]
     if data.get("message"):
         status.message = data["message"]
-    if data.get("production") is not None:
-        status.production = int(data["production"])
     if data.get("consumption") is not None:
         status.consumption = int(data["consumption"])
     status.updated_at = datetime.now(timezone.utc)
