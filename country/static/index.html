@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>43Country — Официальный портал</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --orange:#f5a623; --orange-dim:#c47d10;
+    --bg:#0a0c0e; --bg2:#0f1215; --bg3:#141a1f; --panel:#111620;
+    --border:#1e2a35; --border-bright:#2e4055;
+    --text:#c8d8e0; --text-dim:#607080;
+    --green:#3ddc84; --red:#ff4444; --yellow:#f5c842;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;min-height:100vh;overflow-x:hidden;}
+  body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999;}
+
+  /* TOPBAR */
+  .topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:6px 24px;display:flex;align-items:center;gap:24px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);}
+  .ticker{flex:1;overflow:hidden;white-space:nowrap;}
+  .ticker span{display:inline-block;animation:ticker 35s linear infinite;}
+  @keyframes ticker{0%{transform:translateX(100vw);}100%{transform:translateX(-100%);}}
+  .clock{color:var(--orange);letter-spacing:1px;}
+
+  /* HEADER */
+  header{background:linear-gradient(180deg,#0d1520 0%,var(--bg) 100%);border-bottom:2px solid var(--orange-dim);padding:28px 40px 20px;position:relative;overflow:hidden;}
+  header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--orange),transparent);animation:glow-line 3s ease-in-out infinite;}
+  @keyframes glow-line{0%,100%{opacity:.4;}50%{opacity:1;}}
+  .header-inner{display:flex;align-items:center;gap:28px;max-width:1200px;margin:0 auto;}
+  .logo-box{width:72px;height:72px;border:2px solid var(--orange);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:22px;font-weight:900;color:var(--orange);position:relative;flex-shrink:0;box-shadow:0 0 20px rgba(245,166,35,.2),inset 0 0 20px rgba(245,166,35,.05);}
+  .logo-box::before,.logo-box::after{content:'';position:absolute;width:8px;height:8px;border:2px solid var(--orange);}
+  .logo-box::before{top:-4px;left:-4px;border-right:none;border-bottom:none;}
+  .logo-box::after{bottom:-4px;right:-4px;border-left:none;border-top:none;}
+  .header-text h1{font-family:'Orbitron',monospace;font-size:32px;font-weight:900;color:#fff;letter-spacing:4px;}
+  .header-text h1 span{color:var(--orange);}
+  .header-text .subtitle{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:3px;margin-top:4px;}
+
+  /* NAV */
+  nav{background:var(--panel);border-bottom:1px solid var(--border);padding:0 40px;}
+  nav ul{display:flex;list-style:none;max-width:1200px;margin:0 auto;}
+  nav a{display:block;padding:14px 20px;text-decoration:none;color:var(--text-dim);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:13px;letter-spacing:2px;text-transform:uppercase;border-bottom:2px solid transparent;transition:all .2s;cursor:pointer;}
+  nav a:hover,nav a.active{color:var(--orange);border-bottom-color:var(--orange);}
+
+  /* MAIN GRID */
+  .container{max-width:1200px;margin:0 auto;padding:28px 40px;display:grid;grid-template-columns:1fr 320px;gap:24px;}
+
+  /* ENERGY BANNER */
+  .energy-banner{grid-column:1/-1;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--green);padding:14px 20px;display:flex;align-items:center;gap:20px;font-family:'Share Tech Mono',monospace;font-size:12px;transition:border-left-color .5s;}
+  .energy-banner.warning{border-left-color:var(--yellow);}
+  .energy-banner.critical{border-left-color:var(--red);}
+  .energy-logo{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--orange);letter-spacing:1px;white-space:nowrap;}
+  .e-divider{color:var(--border-bright);}
+  .energy-status-row{display:flex;align-items:center;gap:8px;flex:1;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s ease-in-out infinite;}
+  .dot.warning{background:var(--yellow);box-shadow:0 0 8px var(--yellow);}
+  .dot.critical{background:var(--red);box-shadow:0 0 8px var(--red);animation:pulse-fast .5s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+  @keyframes pulse-fast{0%,100%{opacity:1;}50%{opacity:.2;}}
+  .e-stats{display:flex;gap:24px;font-size:11px;}
+  .e-val{color:var(--green);font-weight:bold;}
+  .e-val.warn{color:var(--yellow);}
+
+  /* PANEL */
+  .panel{background:var(--panel);border:1px solid var(--border);}
+  .panel-header{padding:12px 18px;border-bottom:1px solid var(--border);font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:var(--orange);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+  .panel-header::before{content:'';width:3px;height:14px;background:var(--orange);display:block;}
+  .panel-body{padding:18px;}
+
+  /* NEWS */
+  .news-list{display:flex;flex-direction:column;gap:16px;}
+  .news-item{border-bottom:1px solid var(--border);padding-bottom:16px;}
+  .news-item:last-child{border-bottom:none;padding-bottom:0;}
+  .news-meta{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .news-tag{font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 8px;border:1px solid var(--orange-dim);color:var(--orange);letter-spacing:1px;}
+  .news-date{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);}
+  .news-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;color:#fff;margin-bottom:4px;line-height:1.3;}
+  .news-body{font-size:14px;color:var(--text-dim);line-height:1.5;}
+
+  /* SIDEBAR */
+  .sidebar{display:flex;flex-direction:column;gap:20px;}
+  .info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .info-row:last-child{border-bottom:none;}
+  .info-label{color:var(--text-dim);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;}
+  .info-val{color:#fff;font-weight:600;}
+  .info-val.orange{color:var(--orange);}
+  .info-val.green{color:var(--green);}
+  .citizen-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);font-size:13px;margin-bottom:6px;}
+  .citizen-row:last-child{margin-bottom:0;}
+  .c-avatar{width:28px;height:28px;background:var(--border-bright);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-size:10px;color:var(--orange);flex-shrink:0;}
+  .c-name{flex:1;font-weight:600;color:#fff;}
+  .c-role{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:1px;}
+  .c-role.founder{color:var(--orange);}
+  .map-box{height:180px;background:var(--bg3);border:1px solid var(--border);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+  .map-box::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.5%,rgba(30,255,120,.05) 49.5%,rgba(30,255,120,.05) 50.5%,transparent 50.5%),linear-gradient(0deg,transparent 49.5%,rgba(30,255,120,.05) 49.5%,rgba(30,255,120,.05) 50.5%,transparent 50.5%);background-size:40px 40px;}
+  .map-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--orange);box-shadow:0 0 12px var(--orange);top:50%;left:50%;transform:translate(-50%,-50%);animation:pulse 2s infinite;}
+  .map-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:2px;text-align:center;z-index:1;}
+
+  /* ENERGY PAGE */
+  .wide-wrap{max-width:1200px;margin:0 auto;padding:28px 40px;}
+  .e-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px;}
+  .e-card{background:var(--panel);border:1px solid var(--border);padding:20px;}
+  .e-card-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:2px;margin-bottom:10px;}
+  .e-card-value{font-family:'Orbitron',monospace;font-size:28px;font-weight:700;color:var(--green);}
+  .e-card-value.warn{color:var(--yellow);}
+  .e-card-unit{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-top:4px;}
+  .e-bar-wrap{margin-top:12px;}
+  .e-bar-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-bottom:5px;font-family:'Share Tech Mono',monospace;}
+  .e-bar-track{height:6px;background:var(--border);}
+  .e-bar-fill{height:100%;background:var(--green);transition:width 1s;}
+  .e-bar-fill.warn{background:var(--yellow);}
+  .e-table{width:100%;border-collapse:collapse;font-size:13px;font-family:'Share Tech Mono',monospace;}
+  .e-table th{text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-dim);font-size:10px;letter-spacing:1px;}
+  .e-table td{padding:10px 12px;border-bottom:1px solid var(--border);}
+  .e-table tr:last-child td{border-bottom:none;}
+
+  /* ABOUT PAGE */
+  .about-body{font-size:15px;line-height:1.8;color:var(--text);max-width:700px;}
+  .about-body h2{font-family:'Orbitron',monospace;font-size:14px;color:var(--orange);letter-spacing:2px;margin:24px 0 10px;}
+
+  /* PAGES */
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* ADMIN */
+  .admin-title{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--orange);letter-spacing:3px;margin-bottom:6px;}
+  .admin-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:28px;letter-spacing:1px;}
+  .admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  .form-group{margin-bottom:14px;}
+  .form-label{display:block;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:2px;margin-bottom:6px;text-transform:uppercase;}
+  .form-input,.form-textarea,.form-select{width:100%;background:var(--bg3);border:1px solid var(--border-bright);color:var(--text);padding:10px 14px;font-family:'Rajdhani',sans-serif;font-size:15px;outline:none;transition:border-color .2s;appearance:none;}
+  .form-textarea{min-height:100px;resize:vertical;}
+  .form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--orange);}
+  .btn{padding:10px 24px;border:none;cursor:pointer;font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;transition:all .2s;}
+  .btn-orange{background:var(--orange);color:#000;}
+  .btn-orange:hover{background:#ffc044;}
+  .btn-orange:disabled{background:var(--border-bright);color:var(--text-dim);cursor:not-allowed;}
+  .btn-ghost{background:transparent;color:var(--orange);border:1px solid var(--orange);}
+  .btn-ghost:hover{background:rgba(245,166,35,.1);}
+  .btn-red{background:transparent;color:var(--red);border:1px solid var(--red);font-size:10px;padding:4px 10px;}
+  .btn-red:hover{background:rgba(255,68,68,.1);}
+  .admin-citizen-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);margin-bottom:8px;}
+  .admin-citizen-row .acr-name{flex:1;font-weight:600;}
+  .role-badge{font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 8px;border:1px solid var(--border-bright);color:var(--text-dim);letter-spacing:1px;}
+  .role-badge.founder{border-color:var(--orange);color:var(--orange);}
+  .admin-news-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);margin-bottom:8px;}
+  .anr-title{flex:1;font-weight:600;font-size:14px;}
+  .anr-tag{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--orange);margin-bottom:2px;}
+
+  /* LOGIN OVERLAY */
+  .login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;z-index:9998;backdrop-filter:blur(4px);}
+  .login-box{background:var(--panel);border:1px solid var(--border-bright);padding:40px;width:360px;position:relative;}
+  .login-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--orange);}
+  .login-title{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--orange);letter-spacing:3px;margin-bottom:6px;}
+  .login-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:28px;}
+  .login-error{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--red);margin-top:10px;display:none;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:30px;right:30px;background:var(--panel);border:1px solid var(--orange);border-left:3px solid var(--orange);padding:14px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--orange);letter-spacing:1px;z-index:10000;transform:translateX(200%);transition:transform .3s;}
+  .toast.show{transform:translateX(0);}
+  .toast.err{border-color:var(--red);color:var(--red);}
+
+  /* LOADING */
+  .loading{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:2px;padding:20px 0;text-align:center;animation:pulse 1.5s infinite;}
+
+  footer{margin-top:40px;border-top:1px solid var(--border);padding:20px 40px;display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;}
+  footer span{color:var(--orange);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="clock" id="clock">--:--:--</div>
+  <div style="color:var(--border-bright)">|</div>
+  <div class="ticker">
+    <span>▶ ОФИЦИАЛЬНЫЙ ПОРТАЛ ГОСУДАРСТВА 43COUNTRY &nbsp;&nbsp;&nbsp; ▶ SATISFACTORY WORLD &nbsp;&nbsp;&nbsp; ▶ 43ENERGY: МОНИТОРИНГ АКТИВЕН &nbsp;&nbsp;&nbsp; ▶ ПРОИЗВОДСТВО ЖЕЛЕЗНЫХ ПЛАСТИН: 320/МИН &nbsp;&nbsp;&nbsp; ▶ ЗАКОН О ТРАНСПОРТНЫХ МАРШРУТАХ ВСТУПИЛ В СИЛУ &nbsp;&nbsp;&nbsp;</span>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo-box">43</div>
+    <div class="header-text">
+      <h1><span>43</span>COUNTRY</h1>
+      <div class="subtitle">OFFICIAL STATE PORTAL &nbsp;·&nbsp; SATISFACTORY WORLD &nbsp;·&nbsp; EST. CYCLE 001</div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav>
+  <ul>
+    <li><a class="active" onclick="showPage('home',this)">Главная</a></li>
+    <li><a onclick="showPage('energy',this)">43Energy</a></li>
+    <li><a onclick="showPage('about',this)">О стране</a></li>
+  </ul>
+</nav>
+
+<!-- ===== HOME ===== -->
+<div id="page-home" class="page active">
+  <div class="container">
+
+    <div class="energy-banner" id="energyBanner">
+      <div class="energy-logo">⚡ 43ENERGY</div>
+      <div class="e-divider">|</div>
+      <div class="energy-status-row">
+        <div class="dot" id="eDot"></div>
+        <span id="eMsg">Загрузка...</span>
+      </div>
+      <div class="e-stats">
+        <div><span class="e-val" id="eProd">—</span> MW <span style="color:var(--text-dim)">ВЫРАБОТКА</span></div>
+        <div><span class="e-val warn" id="eCons">—</span> MW <span style="color:var(--text-dim)">ПОТРЕБЛЕНИЕ</span></div>
+        <div><span class="e-val" id="eRes">—</span> <span style="color:var(--text-dim)">РЕЗЕРВ</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">Лента новостей</div>
+      <div class="panel-body">
+        <div class="news-list" id="newsList"><div class="loading">ЗАГРУЗКА ДАННЫХ...</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-header">Данные государства</div>
+        <div class="panel-body">
+          <div class="info-row"><span class="info-label">НАЗВАНИЕ</span><span class="info-val orange">43Country</span></div>
+          <div class="info-row"><span class="info-label">ОСНОВАТЕЛЬ</span><span class="info-val">Заварка</span></div>
+          <div class="info-row"><span class="info-label">МИР</span><span class="info-val">Satisfactory</span></div>
+          <div class="info-row"><span class="info-label">ГРАЖДАН</span><span class="info-val orange" id="citizenCount">—</span></div>
+          <div class="info-row"><span class="info-label">СТАТУС</span><span class="info-val green">АКТИВНА</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">Карта территории</div>
+        <div class="panel-body" style="padding:0">
+          <div class="map-box">
+            <div class="map-dot"></div>
+            <div class="map-label">СТОЛИЦА<br>43COUNTRY</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">Граждане</div>
+        <div class="panel-body">
+          <div id="citizenList"><div class="loading">ЗАГРУЗКА...</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== ENERGY PAGE ===== -->
+<div id="page-energy" class="page">
+  <div class="wide-wrap">
+    <div class="panel-header" style="border:none;padding-left:0;margin-bottom:20px;">⚡ 43ENERGY — ЭНЕРГОСИСТЕМА ГОСУДАРСТВА</div>
+    <div class="e-cards">
+      <div class="e-card">
+        <div class="e-card-label">ОБЩАЯ ВЫРАБОТКА</div>
+        <div class="e-card-value" id="ep2">—</div>
+        <div class="e-card-unit">МВТ / ЦИКЛ</div>
+        <div class="e-bar-wrap">
+          <div class="e-bar-lbl"><span>ЗАГРУЗКА ГЕНЕРАТОРОВ</span><span id="epPct">—</span></div>
+          <div class="e-bar-track"><div class="e-bar-fill" id="epBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="e-card">
+        <div class="e-card-label">ПОТРЕБЛЕНИЕ</div>
+        <div class="e-card-value warn" id="ec2">—</div>
+        <div class="e-card-unit">МВТ / ЦИКЛ</div>
+        <div class="e-bar-wrap">
+          <div class="e-bar-lbl"><span>ОТ ВЫРАБОТКИ</span><span id="ecPct">—</span></div>
+          <div class="e-bar-track"><div class="e-bar-fill warn" id="ecBar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="e-card">
+        <div class="e-card-label">РЕЗЕРВ МОЩНОСТИ</div>
+        <div class="e-card-value" id="er2">—</div>
+        <div class="e-card-unit">МВТ ЗАПАСА</div>
+        <div class="e-bar-wrap">
+          <div class="e-bar-lbl"><span>СТАБИЛЬНОСТЬ</span><span id="erPct">—</span></div>
+          <div class="e-bar-track"><div class="e-bar-fill" id="erBar" style="width:0%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">Объекты энергосистемы</div>
+      <div class="panel-body">
+        <table class="e-table">
+          <thead><tr><th>ОБЪЕКТ</th><th>ТИП</th><th>МОЩНОСТЬ</th><th>СТАТУС</th></tr></thead>
+          <tbody>
+            <tr><td style="color:#fff">Угольная станция A-1</td><td style="color:var(--text-dim)">COAL GENERATOR</td><td style="color:var(--orange)">450 МВТ</td><td><span style="color:var(--green)">● РАБОТАЕТ</span></td></tr>
+            <tr><td style="color:#fff">Угольная станция A-2</td><td style="color:var(--text-dim)">COAL GENERATOR</td><td style="color:var(--orange)">450 МВТ</td><td><span style="color:var(--green)">● РАБОТАЕТ</span></td></tr>
+            <tr><td style="color:#fff">Биомасса B-1</td><td style="color:var(--text-dim)">BIOMASS BURNER</td><td style="color:var(--orange)">340 МВТ</td><td><span style="color:var(--yellow)">● РЕЗЕРВ</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ABOUT PAGE ===== -->
+<div id="page-about" class="page">
+  <div class="wide-wrap">
+    <div class="panel">
+      <div class="panel-header">О государстве 43Country</div>
+      <div class="panel-body">
+        <div class="about-body" id="aboutText"><div class="loading">ЗАГРУЗКА...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADMIN ===== -->
+<div id="page-admin" class="page">
+  <div class="wide-wrap">
+    <div class="admin-title">ПАНЕЛЬ УПРАВЛЕНИЯ</div>
+    <div class="admin-sub" id="adminSub">АВТОРИЗОВАН КАК: ЗАВАРКА · УРОВЕНЬ ДОСТУПА: FOUNDER</div>
+    <div class="admin-grid">
+
+      <!-- ПУБЛИКАЦИЯ НОВОСТЕЙ -->
+      <div class="panel">
+        <div class="panel-header">Публикация новости</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Заголовок</label>
+            <input type="text" class="form-input" id="newsTitle" placeholder="Заголовок...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Тег</label>
+            <select class="form-select form-input" id="newsTag">
+              <option>ОФИЦИАЛЬНО</option><option>ЭНЕРГЕТИКА</option>
+              <option>ЭКОНОМИКА</option><option>УКАЗ</option><option>СТРОИТЕЛЬСТВО</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Текст</label>
+            <textarea class="form-textarea" id="newsBody" placeholder="Текст новости..."></textarea>
+          </div>
+          <button class="btn btn-orange" id="publishBtn" onclick="publishNews()">ОПУБЛИКОВАТЬ</button>
+          <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+            <div class="form-label" style="margin-bottom:10px">ОПУБЛИКОВАННЫЕ НОВОСТИ</div>
+            <div id="adminNewsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ГРАЖДАНЕ -->
+      <div class="panel">
+        <div class="panel-header">Управление гражданами</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Добавить гражданина</label>
+            <div style="display:flex;gap:8px">
+              <input type="text" class="form-input" id="newCitizenName" placeholder="Имя/ник" style="flex:1">
+              <select class="form-select form-input" id="newCitizenRole" style="width:150px">
+                <option>Гражданин</option><option>Инженер</option>
+                <option>Энергетик</option><option>Строитель</option><option>Советник</option>
+              </select>
+            </div>
+            <button class="btn btn-orange" style="margin-top:10px" onclick="addCitizen()">ДОБАВИТЬ</button>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:16px;">
+            <div class="form-label" style="margin-bottom:10px">СПИСОК ГРАЖДАН</div>
+            <div id="adminCitizenList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ЭНЕРГИЯ -->
+      <div class="panel">
+        <div class="panel-header">Статус 43Energy</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Статус сети</label>
+            <select class="form-select form-input" id="eStatusSel">
+              <option value="ok">✓ Штатный режим</option>
+              <option value="warning">⚠ Предупреждение</option>
+              <option value="critical">✖ Критический сбой</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Сообщение</label>
+            <input type="text" class="form-input" id="eMsgInput" placeholder="Сообщение для баннера...">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="form-group">
+              <label class="form-label">Выработка (МВТ)</label>
+              <input type="number" class="form-input" id="eProdInput" placeholder="1240">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Потребление (МВТ)</label>
+              <input type="number" class="form-input" id="eConsInput" placeholder="980">
+            </div>
+          </div>
+          <button class="btn btn-orange" onclick="updateEnergy()">ОБНОВИТЬ</button>
+        </div>
+      </div>
+
+      <!-- О СТРАНЕ -->
+      <div class="panel">
+        <div class="panel-header">Редактировать "О стране"</div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Текст (HTML разрешён)</label>
+            <textarea class="form-textarea" id="aboutEditor" style="min-height:160px;font-family:'Share Tech Mono',monospace;font-size:12px;"></textarea>
+          </div>
+          <button class="btn btn-orange" onclick="saveAbout()">СОХРАНИТЬ</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN OVERLAY -->
+<div class="login-overlay" id="loginOverlay" style="display:none">
+  <div class="login-box">
+    <div class="login-title">ADMIN ACCESS</div>
+    <div class="login-sub">ПОРТАЛ УПРАВЛЕНИЯ · ТОЛЬКО ДЛЯ АВТОРИЗОВАННЫХ</div>
+    <div class="form-group">
+      <label class="form-label">Код доступа</label>
+      <input type="password" class="form-input" id="adminPwInput" placeholder="········"
+             onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-orange" onclick="doLogin()">ВОЙТИ</button>
+    <button class="btn btn-ghost" style="margin-left:10px" onclick="closeLogin()">ОТМЕНА</button>
+    <div class="login-error" id="loginErr">⚠ НЕВЕРНЫЙ КОД ДОСТУПА</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div>© 43COUNTRY · <span>OFFICIAL STATE PORTAL</span></div>
+  <div>POWERED BY <span>43ENERGY</span> · SATISFACTORY WORLD</div>
+</footer>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API = '';          // пусто = тот же домен (Flask сервит и фронт и API)
+let adminPassword = null;
+
+// ============================================================
+// UTILS
+// ============================================================
+function toast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.className = 'toast', 2500);
+}
+
+function updateClock() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+async function apiFetch(path, opts={}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers||{}) };
+  if (adminPassword) headers['X-Admin-Password'] = adminPassword;
+  const res = await fetch(API + path, { ...opts, headers });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || res.statusText);
+  }
+  return res.json();
+}
+
+// ============================================================
+// PAGES
+// ============================================================
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'energy') loadEnergy();
+  if (name === 'about') loadAbout();
+}
+
+// ============================================================
+// LOAD DATA
+// ============================================================
+async function loadNews() {
+  try {
+    const news = await apiFetch('/api/news');
+    const el = document.getElementById('newsList');
+    if (!news.length) { el.innerHTML = '<div class="loading">НОВОСТЕЙ ПОКА НЕТ</div>'; return; }
+    el.innerHTML = news.map(n => `
+      <div class="news-item">
+        <div class="news-meta">
+          <span class="news-tag">${n.tag}</span>
+          <span class="news-date">${n.date}</span>
+        </div>
+        <div class="news-title">${n.title}</div>
+        <div class="news-body">${n.body}</div>
+      </div>`).join('');
+  } catch(e) { document.getElementById('newsList').innerHTML = '<div class="loading" style="color:var(--red)">ОШИБКА ЗАГРУЗКИ</div>'; }
+}
+
+async function loadCitizens() {
+  try {
+    const citizens = await apiFetch('/api/citizens');
+    document.getElementById('citizenCount').textContent = citizens.length;
+    document.getElementById('citizenList').innerHTML = citizens.map(c => `
+      <div class="citizen-row">
+        <div class="c-avatar">${c.name[0].toUpperCase()}</div>
+        <div class="c-name">${c.name}</div>
+        <div class="c-role ${c.is_founder?'founder':''}">${c.role.toUpperCase()}</div>
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function loadEnergyBanner() {
+  try {
+    const e = await apiFetch('/api/energy');
+    const banner = document.getElementById('energyBanner');
+    const dot = document.getElementById('eDot');
+    banner.className = 'energy-banner' + (e.status!=='ok' ? ' '+e.status : '');
+    dot.className = 'dot' + (e.status!=='ok' ? ' '+e.status : '');
+    document.getElementById('eMsg').textContent = e.message;
+    document.getElementById('eProd').textContent = e.production.toLocaleString();
+    document.getElementById('eCons').textContent = e.consumption.toLocaleString();
+    document.getElementById('eRes').textContent = '+' + e.reserve_pct + '%';
+  } catch(e) {}
+}
+
+async function loadEnergy() {
+  try {
+    const e = await apiFetch('/api/energy');
+    document.getElementById('ep2').textContent = e.production.toLocaleString();
+    document.getElementById('ec2').textContent = e.consumption.toLocaleString();
+    const reserve = e.production - e.consumption;
+    document.getElementById('er2').textContent = '+' + reserve.toLocaleString();
+    const epPct = Math.round((e.consumption / e.production) * 100);
+    const erPct = Math.min(100, e.reserve_pct);
+    document.getElementById('epPct').textContent = epPct + '%';
+    document.getElementById('ecPct').textContent = epPct + '%';
+    document.getElementById('erPct').textContent = erPct + '%';
+    document.getElementById('epBar').style.width = epPct + '%';
+    document.getElementById('ecBar').style.width = epPct + '%';
+    document.getElementById('erBar').style.width = erPct + '%';
+  } catch(e) {}
+}
+
+async function loadAbout() {
+  try {
+    const s = await apiFetch('/api/settings/about_text');
+    document.getElementById('aboutText').innerHTML = s.value;
+  } catch(e) {}
+}
+
+// ============================================================
+// ADMIN LOGIN
+// ============================================================
+function checkURL() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('') === 'zawarkayt' || window.location.search === '?=zawarkayt') {
+    document.getElementById('loginOverlay').style.display = 'flex';
+  }
+}
+
+function closeLogin() {
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('adminPwInput').value = '';
+  document.getElementById('loginErr').style.display = 'none';
+}
+
+async function doLogin() {
+  const pw = document.getElementById('adminPwInput').value;
+  try {
+    await apiFetch('/api/admin/login', {
+      method: 'POST',
+      body: JSON.stringify({ password: pw })
+    });
+    adminPassword = pw;
+    closeLogin();
+    loadAdminData();
+    showPage('admin', null);
+    toast('✓ ДОБРО ПОЖАЛОВАТЬ, ЗАВАРКА');
+  } catch(e) {
+    document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('adminPwInput').value = '';
+  }
+}
+
+// ============================================================
+// ADMIN DATA
+// ============================================================
+async function loadAdminData() {
+  await loadAdminCitizens();
+  await loadAdminNews();
+  try {
+    const s = await apiFetch('/api/settings/about_text');
+    document.getElementById('aboutEditor').value = s.value;
+  } catch(e) {}
+}
+
+async function loadAdminCitizens() {
+  try {
+    const citizens = await apiFetch('/api/citizens');
+    document.getElementById('adminCitizenList').innerHTML = citizens.map(c => `
+      <div class="admin-citizen-row">
+        <div class="acr-name">${c.name}</div>
+        <div class="role-badge ${c.is_founder?'founder':''}">${c.role.toUpperCase()}</div>
+        ${!c.is_founder ? `<button class="btn btn-red" onclick="removeCitizen(${c.id},'${c.name}')">УДАЛИТЬ</button>` : ''}
+      </div>`).join('');
+  } catch(e) {}
+}
+
+async function loadAdminNews() {
+  try {
+    const news = await apiFetch('/api/news');
+    document.getElementById('adminNewsList').innerHTML = news.map(n => `
+      <div class="admin-news-row">
+        <div>
+          <div class="anr-tag">${n.tag} · ${n.date}</div>
+          <div class="anr-title">${n.title}</div>
+        </div>
+        <button class="btn btn-red" onclick="deleteNews(${n.id})">✕</button>
+      </div>`).join('') || '<div style="color:var(--text-dim);font-size:13px">Новостей нет</div>';
+  } catch(e) {}
+}
+
+// ============================================================
+// ADMIN ACTIONS
+// ============================================================
+async function publishNews() {
+  const title = document.getElementById('newsTitle').value.trim();
+  const body = document.getElementById('newsBody').value.trim();
+  const tag = document.getElementById('newsTag').value;
+  if (!title || !body) { toast('⚠ ЗАПОЛНИ ВСЕ ПОЛЯ', true); return; }
+  const btn = document.getElementById('publishBtn');
+  btn.disabled = true; btn.textContent = 'ПУБЛИКАЦИЯ...';
+  try {
+    await apiFetch('/api/admin/news', { method:'POST', body: JSON.stringify({title, body, tag}) });
+    document.getElementById('newsTitle').value = '';
+    document.getElementById('newsBody').value = '';
+    await loadNews();
+    await loadAdminNews();
+    toast('✓ НОВОСТЬ ОПУБЛИКОВАНА');
+  } catch(e) { toast('⚠ ' + e.message, true); }
+  btn.disabled = false; btn.textContent = 'ОПУБЛИКОВАТЬ';
+}
+
+async function deleteNews(id) {
+  try {
+    await apiFetch('/api/admin/news/'+id, { method:'DELETE' });
+    await loadNews();
+    await loadAdminNews();
+    toast('✓ НОВОСТЬ УДАЛЕНА');
+  } catch(e) { toast('⚠ '+e.message, true); }
+}
+
+async function addCitizen() {
+  const name = document.getElementById('newCitizenName').value.trim();
+  const role = document.getElementById('newCitizenRole').value;
+  if (!name) { toast('⚠ ВВЕДИ ИМЯ', true); return; }
+  try {
+    await apiFetch('/api/admin/citizens', { method:'POST', body: JSON.stringify({name, role}) });
+    document.getElementById('newCitizenName').value = '';
+    await loadCitizens();
+    await loadAdminCitizens();
+    toast('✓ ГРАЖДАНИН ' + name.toUpperCase() + ' ДОБАВЛЕН');
+  } catch(e) { toast('⚠ '+e.message, true); }
+}
+
+async function removeCitizen(id, name) {
+  try {
+    await apiFetch('/api/admin/citizens/'+id, { method:'DELETE' });
+    await loadCitizens();
+    await loadAdminCitizens();
+    toast('✓ ' + name.toUpperCase() + ' УДАЛЁН');
+  } catch(e) { toast('⚠ '+e.message, true); }
+}
+
+async function updateEnergy() {
+  const status = document.getElementById('eStatusSel').value;
+  const message = document.getElementById('eMsgInput').value.trim();
+  const production = document.getElementById('eProdInput').value;
+  const consumption = document.getElementById('eConsInput').value;
+  const body = { status };
+  if (message) body.message = message;
+  if (production) body.production = production;
+  if (consumption) body.consumption = consumption;
+  try {
+    await apiFetch('/api/admin/energy', { method:'POST', body: JSON.stringify(body) });
+    document.getElementById('eMsgInput').value = '';
+    document.getElementById('eProdInput').value = '';
+    document.getElementById('eConsInput').value = '';
+    await loadEnergyBanner();
+    toast('✓ СТАТУС 43ENERGY ОБНОВЛЁН');
+  } catch(e) { toast('⚠ '+e.message, true); }
+}
+
+async function saveAbout() {
+  const value = document.getElementById('aboutEditor').value;
+  try {
+    await apiFetch('/api/admin/settings', { method:'POST', body: JSON.stringify({key:'about_text', value}) });
+    document.getElementById('aboutText').innerHTML = value;
+    toast('✓ ОПИСАНИЕ СОХРАНЕНО');
+  } catch(e) { toast('⚠ '+e.message, true); }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+loadNews();
+loadCitizens();
+loadEnergyBanner();
+checkURL();
+</script>
+</body>
+</html>
