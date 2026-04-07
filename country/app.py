@@ -167,6 +167,9 @@ def require_admin():
 def index():
     return send_from_directory("static", "index.html")
 
+@app.route("/smc")
+def smc():
+    return send_from_directory("static", "smc.html")
 
 @app.route("/api/news", methods=["GET"])
 def get_news():
