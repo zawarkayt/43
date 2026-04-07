@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍋 СМКЛ — Супер-Мега-Крутые Лимонные Карточки</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0A0A0A;--bg2:#121212;--bg3:#1A1A1A;--surface:#222;--surface2:#2A2A2A;
+  --border:#2E2E2E;--text:#F2F2F2;--muted:#777;--muted2:#555;
+  --lemon:#F5E642;--lemon2:#C9BC00;--lemon3:#FFF9C4;
+  --zest:#FF6B00;--zest2:#FF9940;
+  --lime:#8DC63F;
+  --common:#9E9E9E;--rare:#42A5F5;--epic:#BA68C8;--legendary:#FFD600;--mythic:#FF4081;
+  --r:14px;--r2:10px;--r3:6px;
+}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;flex-wrap:wrap;gap:10px}
+.logo{font-family:'Unbounded',sans-serif;font-weight:900;font-size:.9rem;color:var(--lemon);line-height:1.25;letter-spacing:-.3px}
+.logo small{display:block;font-size:.55rem;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wallet{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--border);border-radius:30px;padding:7px 14px;font-weight:800;font-size:.95rem}
+.wallet-amt{color:var(--lemon)}
+.nav{display:flex;gap:2px;background:var(--surface);border-radius:30px;padding:3px}
+.nav button{background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;font-size:.82rem;padding:6px 16px;border-radius:24px;cursor:pointer;transition:.15s}
+.nav button.on{background:var(--lemon);color:#000}
+.nav button:hover:not(.on){color:var(--text)}
+
+.page{display:none;max-width:1080px;margin:0 auto;padding:36px 28px}
+.page.on{display:block;animation:fadeUp .28s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* GACHA */
+.gacha-hero{text-align:center;margin-bottom:40px}
+.gacha-hero h1{font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(1.6rem,3.5vw,2.8rem);background:linear-gradient(135deg,var(--lemon),var(--zest));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:10px}
+.gacha-hero p{color:var(--muted);font-size:.95rem}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:14px;text-align:center}
+.stat-val{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1.4rem;color:var(--lemon)}
+.stat-lab{font-size:.68rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+
+.pity-bar-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:20px}
+.pity-label{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-bottom:8px}
+.pity-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.pity-fill{height:100%;background:linear-gradient(90deg,var(--lemon),var(--zest));border-radius:4px;transition:.4s}
+
+.rates-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:28px}
+.box-title{font-family:'Unbounded',sans-serif;font-size:.75rem;color:var(--lemon);margin-bottom:14px;letter-spacing:.5px}
+.rates-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.rate-pill{background:var(--bg2);border-radius:var(--r2);padding:10px 6px;text-align:center;border:1px solid var(--border)}
+.rate-pill .rname{font-size:.65rem;font-weight:700;margin-bottom:4px}
+.rate-pill .rpct{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1rem}
+.rate-pill .rcards{font-size:.6rem;color:var(--muted);margin-top:2px}
+.rc{color:var(--common)}.rr{color:var(--rare)}.re{color:var(--epic)}.rl{color:var(--legendary)}.rm{color:var(--mythic)}
+
+.pull-btns{display:flex;justify-content:center;gap:16px;margin:32px 0;flex-wrap:wrap}
+.pbtn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:18px 32px;border-radius:var(--r);background:var(--bg3);border:2px solid var(--border);color:var(--text);font-family:'Unbounded',sans-serif;font-weight:700;font-size:.95rem;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+.pbtn::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -20%,rgba(245,230,66,.15),transparent 65%);opacity:0;transition:.2s}
+.pbtn:hover::after{opacity:1}
+.pbtn:hover{border-color:var(--lemon);transform:translateY(-3px);box-shadow:0 10px 32px rgba(245,230,66,.1)}
+.pbtn:active{transform:translateY(-1px)}
+.pbtn.x10{border-color:rgba(255,107,0,.4);color:var(--zest2)}
+.pbtn.x10:hover{border-color:var(--zest);box-shadow:0 10px 32px rgba(255,107,0,.1)}
+.pbtn small{font-family:'Nunito',sans-serif;font-size:.7rem;font-weight:700;opacity:.6}
+.pbtn-icon{font-size:1.6rem}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;z-index:1000;padding:20px;overflow-y:auto}
+.modal.on{display:flex}
+.reveal-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;max-width:780px}
+.flip-card{width:110px;height:160px;perspective:700px;cursor:pointer;flex-shrink:0}
+.flip-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:.55s cubic-bezier(.4,0,.2,1)}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px}
+.flip-back{background:#111;border:2px solid #2A2A00;font-size:2rem;color:#2A2A00}
+.flip-front{transform:rotateY(180deg);text-align:center}
+.flip-front.common{background:#111;border:2px solid #555}
+.flip-front.rare{background:#001829;border:2px solid var(--rare)}
+.flip-front.epic{background:#1a0029;border:2px solid var(--epic)}
+.flip-front.legendary{background:#191000;border:2px solid var(--legendary);animation:cglow1 1.8s ease-in-out infinite}
+.flip-front.mythic{background:#1a0010;border:2px solid var(--mythic);animation:cglow2 1.5s ease-in-out infinite}
+@keyframes cglow1{0%,100%{box-shadow:0 0 15px rgba(255,214,0,.25)}50%{box-shadow:0 0 35px rgba(255,214,0,.5)}}
+@keyframes cglow2{0%,100%{box-shadow:0 0 20px rgba(255,64,129,.25)}50%{box-shadow:0 0 40px rgba(255,64,129,.5)}}
+.card-emoji-big{font-size:2rem;line-height:1}
+.card-mini-name{font-family:'Unbounded',sans-serif;font-size:.42rem;font-weight:700;color:var(--text);line-height:1.35}
+.card-badge{font-size:.38rem;font-weight:800;padding:2px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.5px;margin-top:auto}
+.card-badge.common{background:#2a2a2a;color:var(--common)}
+.card-badge.rare{background:#001020;color:var(--rare)}
+.card-badge.epic{background:#16001f;color:var(--epic)}
+.card-badge.legendary{background:#130d00;color:var(--legendary)}
+.card-badge.mythic{background:#140008;color:var(--mythic)}
+.card-mini-pts{font-size:.4rem;color:var(--lemon);font-weight:700}
+.modal-summary{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 24px;display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.ms-item{text-align:center}
+.ms-val{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1.1rem;color:var(--lemon)}
+.ms-lab{font-size:.65rem;color:var(--muted)}
+.modal-btns{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.modal-close{background:var(--lemon);color:#000;border:none;font-family:'Unbounded',sans-serif;font-weight:700;font-size:.85rem;padding:12px 40px;border-radius:30px;cursor:pointer;transition:.2s}
+.modal-close:hover{background:var(--lemon3);transform:scale(1.03)}
+.modal-flip-all{background:transparent;color:var(--muted);border:1px solid var(--border);font-family:'Nunito',sans-serif;font-weight:700;font-size:.8rem;padding:8px 20px;border-radius:20px;cursor:pointer;transition:.15s}
+.modal-flip-all:hover{color:var(--text);border-color:#555}
+
+/* COLLECTION */
+.coll-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.coll-header h2{font-family:'Unbounded',sans-serif;font-size:1.2rem;color:var(--lemon)}
+.coll-filters{display:flex;gap:6px;flex-wrap:wrap}
+.fbtn{padding:5px 13px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;font-size:.75rem;cursor:pointer;transition:.15s}
+.fbtn.on,.fbtn:hover{border-color:var(--lemon);color:var(--lemon)}
+.coll-progress{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;margin-bottom:22px;display:flex;gap:20px;flex-wrap:wrap}
+.cp-item{text-align:center;flex:1;min-width:80px}
+.cp-val{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1.1rem}
+.cp-lab{font-size:.65rem;color:var(--muted);margin-top:2px}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}
+.ccard{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;transition:.2s;position:relative}
+.ccard:hover{transform:translateY(-3px);border-color:#444}
+.ccard.locked{opacity:.3;filter:grayscale(1)}
+.ccard .c-emoji{font-size:2.2rem;line-height:1}
+.ccard .c-name{font-family:'Unbounded',sans-serif;font-size:.52rem;font-weight:700;text-align:center;line-height:1.35}
+.ccard .c-rarity{font-size:.55rem;font-weight:700;padding:2px 8px;border-radius:5px;text-transform:uppercase}
+.ccard .c-pts{font-size:.6rem;color:var(--lemon);font-weight:700}
+.ccard .c-count{position:absolute;top:8px;right:8px;background:var(--lemon);color:#000;font-family:'Unbounded',sans-serif;font-size:.5rem;font-weight:900;padding:2px 6px;border-radius:5px}
+.ccard.rare-card{border-color:rgba(66,165,245,.3)}
+.ccard.epic-card{border-color:rgba(186,104,200,.3)}
+.ccard.legendary-card{border-color:rgba(255,214,0,.3)}
+.ccard.mythic-card{border-color:rgba(255,64,129,.3)}
+
+/* CARD DETAIL */
+.detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:800;padding:20px}
+.detail-modal.on{display:flex}
+.detail-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);max-width:420px;width:100%;overflow:hidden}
+.detail-top{padding:28px;text-align:center;position:relative}
+.detail-emoji{font-size:4rem;margin-bottom:10px}
+.detail-name{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1rem;margin-bottom:8px}
+.detail-rarity-badge{display:inline-block;font-size:.65rem;font-weight:700;padding:3px 12px;border-radius:6px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.detail-desc{color:var(--muted);font-size:.85rem;line-height:1.6;font-style:italic}
+.detail-bottom{padding:16px 24px;background:var(--bg3);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.db-stat{text-align:center}
+.db-val{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1rem;color:var(--lemon)}
+.db-lab{font-size:.6rem;color:var(--muted);margin-top:2px}
+.detail-close{position:absolute;top:12px;right:12px;background:var(--border);border:none;color:var(--muted);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:.15s}
+.detail-close:hover{background:#444;color:var(--text)}
+
+/* SETTINGS */
+.settings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.settings-section{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ss-head{padding:16px 20px;border-bottom:1px solid var(--border);font-family:'Unbounded',sans-serif;font-size:.7rem;color:var(--lemon);letter-spacing:.5px}
+.ss-body{padding:4px 0}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);gap:12px}
+.setting-row:last-child{border-bottom:none}
+.setting-info{flex:1}
+.setting-label{font-weight:700;font-size:.85rem;margin-bottom:3px}
+.setting-desc{font-size:.72rem;color:var(--muted);line-height:1.45}
+.setting-desc.warn{color:#FF9940}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:12px;cursor:pointer;transition:.25s}
+.toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#666;border-radius:50%;transition:.25s}
+.toggle input:checked+.toggle-slider{background:var(--lime)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(20px);background:#fff}
+.toggle.danger input:checked+.toggle-slider{background:#FF4444}
+.toggle.lemon input:checked+.toggle-slider{background:var(--lemon)}
+.setting-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Nunito',sans-serif;font-size:.82rem;padding:6px 10px;border-radius:var(--r3);cursor:pointer;outline:none;font-weight:600}
+.nsfw-section{border:1px solid rgba(255,68,68,.25) !important}
+.nsfw-section .ss-head{color:#FF7070}
+.nsfw-warning{margin:12px 20px;background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);border-radius:var(--r3);padding:10px 14px;font-size:.75rem;color:#FF9090;line-height:1.5}
+.danger-zone{border:1px solid rgba(255,100,50,.25) !important}
+.danger-zone .ss-head{color:var(--zest2)}
+.reset-btn{background:transparent;border:1px solid rgba(255,80,50,.4);color:var(--zest2);font-family:'Nunito',sans-serif;font-weight:700;font-size:.8rem;padding:7px 16px;border-radius:20px;cursor:pointer;transition:.15s;white-space:nowrap}
+.reset-btn:hover{background:rgba(255,80,50,.1);border-color:var(--zest)}
+
+/* SHOP */
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:16px;margin-bottom:36px}
+.shop-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:20px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;transition:.2s}
+.shop-card:hover{border-color:#444;transform:translateY(-2px)}
+.shop-card.featured{border-color:rgba(245,230,66,.35);background:linear-gradient(160deg,#151500,var(--bg3))}
+.shop-icon{font-size:2.4rem}
+.shop-name{font-family:'Unbounded',sans-serif;font-weight:700;font-size:.7rem}
+.shop-amount{font-size:.8rem;color:var(--muted)}
+.shop-price{font-family:'Unbounded',sans-serif;font-weight:900;font-size:1rem;color:var(--lemon)}
+.shop-old{font-size:.7rem;color:var(--muted);text-decoration:line-through}
+.buy-btn{width:100%;background:var(--lemon);color:#000;border:none;font-family:'Unbounded',sans-serif;font-weight:700;font-size:.7rem;padding:9px;border-radius:var(--r3);cursor:pointer;transition:.15s}
+.buy-btn:hover{background:var(--lemon3)}
+.shop-badge{background:var(--zest);color:#fff;font-size:.6rem;font-weight:800;padding:2px 8px;border-radius:5px}
+.section-title{font-family:'Unbounded',sans-serif;font-size:1rem;color:var(--text);margin:0 0 18px}
+
+/* TOAST & BANNER */
+.toast{position:fixed;top:80px;right:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 18px;font-size:.82rem;font-weight:700;z-index:1200;opacity:0;transform:translateX(20px);transition:.25s;pointer-events:none;max-width:260px}
+.toast.on{opacity:1;transform:none}
+.toast.gold{border-color:rgba(255,214,0,.4);color:var(--legendary)}
+.save-banner{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--lemon);color:#000;font-family:'Unbounded',sans-serif;font-weight:700;font-size:.8rem;padding:12px 32px;border-radius:30px;z-index:500;animation:bannerIn .2s ease}
+@keyframes bannerIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%)}}
+.save-banner.on{display:block}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="logo">СМКЛ Карточки <small>super mega cool lemon cards</small></div>
+  <div class="hdr-right">
+    <div class="wallet">🍋 <span class="wallet-amt" id="wallet-display">1250</span><span style="color:var(--muted);font-size:.75rem;font-weight:600"> очков</span></div>
+    <nav class="nav">
+      <button class="on" onclick="showPage('gacha',this)">🎰 Гача</button>
+      <button onclick="showPage('collection',this)">📦 Коллекция</button>
+      <button onclick="showPage('shop',this)">🛒 Магазин</button>
+      <button onclick="showPage('settings',this)">⚙️ Настройки</button>
+    </nav>
+  </div>
+</header>
+
+<!-- GACHA PAGE -->
+<div class="page on" id="page-gacha">
+  <div class="gacha-hero">
+    <h1>Супер-Мега-Крутые<br>Лимонные Карточки</h1>
+    <p>Крути — выбивай — собирай. Уже <strong style="color:var(--lemon)">312 уникальных карт</strong> ждут тебя.</p>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val" id="total-pulls">0</div><div class="stat-lab">всего крутков</div></div>
+    <div class="stat-box"><div class="stat-val" id="total-cards">0</div><div class="stat-lab">карт получено</div></div>
+    <div class="stat-box"><div class="stat-val" id="unique-cards">0</div><div class="stat-lab">уникальных</div></div>
+    <div class="stat-box"><div class="stat-val" id="best-pull">—</div><div class="stat-lab">лучший дроп</div></div>
+  </div>
+
+  <div class="pity-bar-wrap">
+    <div class="pity-label"><span>Пити до Legendary</span><span id="pity-label-val">0 / 90</span></div>
+    <div class="pity-bar"><div class="pity-fill" id="pity-bar" style="width:0%"></div></div>
+  </div>
+
+  <div class="rates-box">
+    <div class="box-title">📊 Шансы выпадения</div>
+    <div class="rates-row">
+      <div class="rate-pill"><div class="rname rc">Common</div><div class="rpct rc">55%</div><div class="rcards">158 карт</div></div>
+      <div class="rate-pill"><div class="rname rr">Rare</div><div class="rpct rr">28%</div><div class="rcards">82 карты</div></div>
+      <div class="rate-pill"><div class="rname re">Epic</div><div class="rpct re">12%</div><div class="rcards">48 карт</div></div>
+      <div class="rate-pill"><div class="rname rl">Legendary</div><div class="rpct rl">4.5%</div><div class="rcards">20 карт</div></div>
+      <div class="rate-pill"><div class="rname rm">Mythic</div><div class="rpct rm">0.5%</div><div class="rcards">4 карты</div></div>
+    </div>
+  </div>
+
+  <div class="pull-btns">
+    <button class="pbtn" onclick="doPull(1)">
+      <span class="pbtn-icon">🎰</span>
+      <span>× 1 крутка</span>
+      <small>100 очков</small>
+    </button>
+    <button class="pbtn x10" onclick="doPull(10)">
+      <span class="pbtn-icon">💥</span>
+      <span>× 10 крутков</span>
+      <small>900 очков — скидка 10%</small>
+    </button>
+  </div>
+</div>
+
+<!-- COLLECTION PAGE -->
+<div class="page" id="page-collection">
+  <div class="coll-header">
+    <h2>Моя Коллекция</h2>
+    <div class="coll-filters">
+      <button class="fbtn on" onclick="filterColl('all',this)">Все</button>
+      <button class="fbtn" onclick="filterColl('common',this)">Common</button>
+      <button class="fbtn" onclick="filterColl('rare',this)">Rare</button>
+      <button class="fbtn" onclick="filterColl('epic',this)">Epic</button>
+      <button class="fbtn" onclick="filterColl('legendary',this)">Legendary</button>
+      <button class="fbtn" onclick="filterColl('mythic',this)">Mythic</button>
+    </div>
+  </div>
+  <div class="coll-progress" id="coll-progress"></div>
+  <div class="cards-grid" id="cards-grid"></div>
+</div>
+
+<!-- SHOP PAGE -->
+<div class="page" id="page-shop">
+  <div class="section-title">🛒 Купить очки</div>
+  <div class="shop-grid">
+    <div class="shop-card">
+      <div class="shop-icon">🍋</div>
+      <div class="shop-name">Маленький Лимон</div>
+      <div class="shop-amount">500 очков</div>
+      <div class="shop-price">59 ₽</div>
+      <button class="buy-btn" onclick="buyPoints(500)">Купить</button>
+    </div>
+    <div class="shop-card">
+      <div class="shop-icon">🍋🍋</div>
+      <div class="shop-name">Лимонный Пак</div>
+      <div class="shop-amount">1 200 очков</div>
+      <div class="shop-price">129 ₽</div>
+      <button class="buy-btn" onclick="buyPoints(1200)">Купить</button>
+    </div>
+    <div class="shop-card featured">
+      <div class="shop-badge">ХИТ</div>
+      <div class="shop-icon">🍋🍋🍋</div>
+      <div class="shop-name">Лимонный Куль</div>
+      <div class="shop-amount">3 000 очков</div>
+      <div class="shop-old">299 ₽</div>
+      <div class="shop-price">249 ₽</div>
+      <button class="buy-btn" onclick="buyPoints(3000)">Купить</button>
+    </div>
+    <div class="shop-card featured">
+      <div class="shop-badge">МЕГА</div>
+      <div class="shop-icon">🌟</div>
+      <div class="shop-name">Лимонный Мешок</div>
+      <div class="shop-amount">8 000 очков</div>
+      <div class="shop-old">799 ₽</div>
+      <div class="shop-price">599 ₽</div>
+      <button class="buy-btn" onclick="buyPoints(8000)">Купить</button>
+    </div>
+    <div class="shop-card">
+      <div class="shop-icon">👑</div>
+      <div class="shop-name">Лимонный Трон</div>
+      <div class="shop-amount">20 000 очков</div>
+      <div class="shop-price">1 299 ₽</div>
+      <button class="buy-btn" onclick="buyPoints(20000)">Купить</button>
+    </div>
+  </div>
+  <div class="section-title">🎁 Спецпредложения</div>
+  <div class="shop-grid">
+    <div class="shop-card featured">
+      <div class="shop-badge">РАЗ В ЖИЗНИ</div>
+      <div class="shop-icon">🎁</div>
+      <div class="shop-name">Стартовый набор</div>
+      <div class="shop-amount">2 000 очков + 10 крутков</div>
+      <div class="shop-price">199 ₽</div>
+      <button class="buy-btn" onclick="buyPoints(2000)">Купить</button>
+    </div>
+    <div class="shop-card">
+      <div class="shop-icon">🍀</div>
+      <div class="shop-name">Подписка Лимон+</div>
+      <div class="shop-amount">500 оч/день × 30 дней</div>
+      <div class="shop-price">299 ₽/мес</div>
+      <button class="buy-btn" onclick="showToast('👆 Это демо-сайт!',false)">Подписаться</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div class="page" id="page-settings">
+  <div class="settings-grid">
+
+    <div class="settings-section">
+      <div class="ss-head">🎮 Игровые настройки</div>
+      <div class="ss-body">
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Автоматическое открытие карт</div><div class="setting-desc">Все карты сразу раскрываются без клика</div></div>
+          <label class="toggle lemon"><input type="checkbox" id="s-autoflip"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Анимации крутков</div><div class="setting-desc">Отключить для более быстрого интерфейса</div></div>
+          <label class="toggle lemon"><input type="checkbox" id="s-animations" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Звуки и эффекты</div><div class="setting-desc">Звуки при получении карт</div></div>
+          <label class="toggle lemon"><input type="checkbox" id="s-sounds" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Подтверждение перед круткой</div></div>
+          <label class="toggle"><input type="checkbox" id="s-confirm"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Размер сетки коллекции</div></div>
+          <select class="setting-select" id="s-gridsize">
+            <option value="sm">Мелко</option>
+            <option value="md" selected>Средне</option>
+            <option value="lg">Крупно</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="ss-head">🎨 Интерфейс</div>
+      <div class="ss-body">
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Тема оформления</div></div>
+          <select class="setting-select">
+            <option selected>Тёмная</option>
+            <option>Глубокий чёрный</option>
+            <option>Лимонная</option>
+            <option>Системная</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Язык</div></div>
+          <select class="setting-select">
+            <option selected>Русский</option>
+            <option>English</option>
+            <option>Українська</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Показывать очки на картах</div></div>
+          <label class="toggle lemon"><input type="checkbox" id="s-showpts" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Показывать заблокированные карты</div><div class="setting-desc">Тёмные силуэты ненайденных карт</div></div>
+          <label class="toggle lemon"><input type="checkbox" id="s-showlocked" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="ss-head">🔔 Уведомления</div>
+      <div class="ss-body">
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Уведомления браузера</div><div class="setting-desc">Пуш при получении Legendary+</div></div>
+          <label class="toggle lemon"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Напоминание о ежедневке</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Уведомление о пити</div><div class="setting-desc">Напомнить при 80/90 крутках без Legendary</div></div>
+          <label class="toggle lemon"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="ss-head">🔒 Приватность</div>
+      <div class="ss-body">
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Публичный профиль</div><div class="setting-desc">Другие могут видеть твою коллекцию</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Показывать в топе игроков</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Анонимная аналитика</div><div class="setting-desc">Помогает улучшать игру</div></div>
+          <label class="toggle lemon"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section nsfw-section">
+      <div class="ss-head">🔞 Контент 18+</div>
+      <div class="ss-body">
+        <div class="nsfw-warning">⚠️ Включая эту опцию, ты подтверждаешь что тебе есть 18 лет. Карточки 18+ имеют особую маркировку.</div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label" style="color:#FF7070">NSFW контент включён</div><div class="setting-desc warn">Разблокирует карточки категории 18+</div></div>
+          <label class="toggle danger"><input type="checkbox" id="s-nsfw"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Размытие NSFW карт</div><div class="setting-desc">Карты 18+ будут размыты в коллекции</div></div>
+          <label class="toggle lemon"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">NSFW в обычной крутке</div><div class="setting-desc warn">Могут выпадать в обычной гаче</div></div>
+          <label class="toggle danger"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Возрастное подтверждение</div><div class="setting-desc">Запрашивать при каждом входе</div></div>
+          <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-section danger-zone">
+      <div class="ss-head">💥 Опасная зона</div>
+      <div class="ss-body">
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Сбросить статистику крутков</div><div class="setting-desc warn">Обнуляет счётчики. Карты остаются.</div></div>
+          <button class="reset-btn" onclick="showToast('Это демо, сброс не сохранится 😅',false)">Сбросить</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Очистить коллекцию</div><div class="setting-desc warn">Удаляет все полученные карты. Необратимо!</div></div>
+          <button class="reset-btn" onclick="confirmClear()">Очистить всё</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Удалить аккаунт</div><div class="setting-desc warn">Полное удаление всех данных навсегда</div></div>
+          <button class="reset-btn" onclick="showToast('😬 Не сейчас...',false)">Удалить аккаунт</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PULL MODAL -->
+<div class="modal" id="pull-modal">
+  <div class="reveal-grid" id="reveal-grid"></div>
+  <div class="modal-summary" id="modal-summary"></div>
+  <div class="modal-btns">
+    <button class="modal-flip-all" onclick="flipAll()">Открыть все</button>
+    <button class="modal-close" onclick="closeModal()">Забрать карты</button>
+  </div>
+</div>
+
+<!-- CARD DETAIL MODAL -->
+<div class="detail-modal" id="detail-modal">
+  <div class="detail-box">
+    <div class="detail-top">
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+      <div class="detail-emoji" id="d-emoji"></div>
+      <div class="detail-name" id="d-name"></div>
+      <div class="detail-rarity-badge" id="d-badge"></div>
+      <div class="detail-desc" id="d-desc"></div>
+    </div>
+    <div class="detail-bottom">
+      <div class="db-stat"><div class="db-val" id="d-pts"></div><div class="db-lab">очков</div></div>
+      <div class="db-stat"><div class="db-val" id="d-count"></div><div class="db-lab">у тебя</div></div>
+      <div class="db-stat"><div class="db-val" id="d-chance"></div><div class="db-lab">шанс</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="save-banner" id="save-banner">✓ Настройки сохранены</div>
+
+<script>
+const CARDS = [
+  {id:1,name:"Кислый Лимон",emoji:"🍋",rarity:"common",pts:10,desc:"Обычный кислый лимон. Всё начинается с малого."},
+  {id:2,name:"Лимонный Чай",emoji:"🫖",rarity:"common",pts:12,desc:"Тёплый чай с долькой лимона. Уютно."},
+  {id:3,name:"Лимонад",emoji:"🥤",rarity:"common",pts:11,desc:"Освежающий лимонад со льдом в жаркий день."},
+  {id:4,name:"Лимонный Кекс",emoji:"🧁",rarity:"common",pts:15,desc:"Сладкий кекс с лимонной цедрой сверху."},
+  {id:5,name:"Кусочек Лимона",emoji:"🍊",rarity:"common",pts:10,desc:"Просто кусочек. Ничего особенного."},
+  {id:6,name:"Лимонная Конфета",emoji:"🍬",rarity:"common",pts:13,desc:"Кисло-сладкая конфета с лимонным вкусом."},
+  {id:7,name:"Лимонный Леденец",emoji:"🍭",rarity:"common",pts:12,desc:"Жёлтый леденец на палочке. Классика."},
+  {id:8,name:"Лимонный Джем",emoji:"🫙",rarity:"common",pts:14,desc:"Домашний джем из лимонов. Мама одобряет."},
+  {id:9,name:"Лимонная Ромашка",emoji:"🌼",rarity:"common",pts:11,desc:"Жёлтый цветок лимонового оттенка."},
+  {id:10,name:"Жёлтый Зонтик",emoji:"☂️",rarity:"common",pts:13,desc:"Лимонно-жёлтый зонтик для пасмурных дней."},
+  {id:11,name:"Лимонная Звезда",emoji:"⭐",rarity:"common",pts:10,desc:"Маленькая звёздочка лимонного цвета."},
+  {id:12,name:"Лимонная Бабочка",emoji:"🦋",rarity:"common",pts:15,desc:"Бабочка с жёлто-лимонными крыльями."},
+  {id:13,name:"Лимонный Мёд",emoji:"🍯",rarity:"common",pts:14,desc:"Мёд с нотками лимона. Лечит простуду."},
+  {id:14,name:"Лимонная Резинка",emoji:"🪀",rarity:"common",pts:10,desc:"Резинка для волос цвета спелого лимона."},
+  {id:15,name:"Лимонные Очки",emoji:"🕶️",rarity:"common",pts:13,desc:"Жёлтые очки. Для стиля, не для зрения."},
+  {id:16,name:"Лимонный Дракон",emoji:"🐉",rarity:"rare",pts:80,desc:"Маленький дракон с чешуёй цвета лимонной кожуры. Дышит кислотой."},
+  {id:17,name:"Лимонный Самурай",emoji:"⚔️",rarity:"rare",pts:90,desc:"Воин, чьи доспехи покрыты лимонной глазурью. Непобедим на кухне."},
+  {id:18,name:"Лимонная Акула",emoji:"🦈",rarity:"rare",pts:85,desc:"Акула цвета лимона. Плавает в морях цитрусового сока."},
+  {id:19,name:"Лимонный Робот",emoji:"🤖",rarity:"rare",pts:95,desc:"Работает на лимонной кислоте. КПД 47%."},
+  {id:20,name:"Лимонный Маг",emoji:"🧙",rarity:"rare",pts:88,desc:"Волшебник, специализирующийся на кислотных заклинаниях."},
+  {id:21,name:"Лимонный Пират",emoji:"🏴‍☠️",rarity:"rare",pts:82,desc:"Пират в жёлтой шляпе. Ищет остров с лимонными деревьями."},
+  {id:22,name:"Лимонная Ведьма",emoji:"🧙‍♀️",rarity:"rare",pts:91,desc:"Варит зелья исключительно из лимонов."},
+  {id:23,name:"Лимонный Ниндзя",emoji:"🥷",rarity:"rare",pts:86,desc:"Невидим в темноте, но виден по запаху лимона."},
+  {id:24,name:"Лимонный Рыцарь",emoji:"🛡️",rarity:"rare",pts:93,desc:"Рыцарь с гербом в виде лимона. Защищает цитрусовые сады."},
+  {id:25,name:"Лимонный Астронавт",emoji:"🧑‍🚀",rarity:"rare",pts:87,desc:"Первый лимон в открытом космосе. Кислый космос."},
+  {id:26,name:"Лимонный Феникс",emoji:"🔥",rarity:"epic",pts:350,desc:"Возрождается из пепла каждый раз ещё кислее. Легенда среди фруктов."},
+  {id:27,name:"Лимонный Единорог",emoji:"🦄",rarity:"epic",pts:380,desc:"Рог из чистого лимонного кристалла. Испускает кислый свет."},
+  {id:28,name:"Лимонный Кракен",emoji:"🐙",rarity:"epic",pts:360,desc:"Чудовище с лимонными щупальцами. Кислит моря."},
+  {id:29,name:"Лимонная Горгона",emoji:"🐍",rarity:"epic",pts:370,desc:"Взгляд превращает всё в лимонное желе."},
+  {id:30,name:"Лимонный Циклоп",emoji:"👁️",rarity:"epic",pts:355,desc:"Видит мир в жёлтых тонах. Единственный глаз — лимонная радужка."},
+  {id:31,name:"Лимонная Виверна",emoji:"🦎",rarity:"epic",pts:390,desc:"Летающий ящер, чья кровь — чистый лимонный сок."},
+  {id:32,name:"Лимонный Голем",emoji:"🗿",rarity:"epic",pts:365,desc:"Создан из спрессованных лимонных косточек. Медленный, но кислый."},
+  {id:33,name:"Лимонный Бог",emoji:"✨",rarity:"legendary",pts:1200,desc:"Верховное существо лимонного пантеона. Создало лимоны на седьмой день."},
+  {id:34,name:"Лимонный Апокалипсис",emoji:"💥",rarity:"legendary",pts:1350,desc:"Когда он приходит, всё становится кислым. Абсолютно всё. Даже счастье."},
+  {id:35,name:"Лимонный Трон",emoji:"👑",rarity:"legendary",pts:1100,desc:"Выкован из тысячи лимонов. Сидеть неудобно, пахнет великолепно."},
+  {id:36,name:"Первый Лимон",emoji:"🌍",rarity:"legendary",pts:1500,desc:"Самый первый лимон на Земле. Видел динозавров. До сих пор кислый."},
+  {id:37,name:"ЛИМОННЫЙ УЛЬТРА",emoji:"🍋‍🟩",rarity:"mythic",pts:9999,desc:"Это не просто карта. Это состояние души. Ты выбил его — значит, вселенная тебя любит. Или ненавидит."},
+  {id:38,name:"Квантовый Лимон",emoji:"⚛️",rarity:"mythic",pts:8888,desc:"Одновременно существует и не существует. Кислый в нескольких вселенных сразу."},
+  {id:39,name:"Лимон Конец Игры",emoji:"🎮",rarity:"mythic",pts:7777,desc:"Последняя карта. Финальный босс. Настоящий эндгейм лимонной коллекции."},
+  {id:40,name:"Бог Мод Лимон",emoji:"🔱",rarity:"mythic",pts:9001,desc:"Превосходит все известные лимонные технологии. Читерская карта."},
+];
+
+const RW = {common:550,rare:280,epic:120,legendary:45,mythic:5};
+const RC = {common:'var(--common)',rare:'var(--rare)',epic:'var(--epic)',legendary:'var(--legendary)',mythic:'var(--mythic)'};
+const RL = {common:'Common',rare:'Rare',epic:'Epic',legendary:'Legendary',mythic:'Mythic'};
+
+let S = {wallet:1250,totalPulls:0,pityCount:0,owned:{},bestRarity:null};
+try{const d=localStorage.getItem('smkl2');if(d)S={...S,...JSON.parse(d)};}catch(e){}
+
+function save(){try{localStorage.setItem('smkl2',JSON.stringify(S));}catch(e){}}
+function updateWallet(){document.getElementById('wallet-display').textContent=S.wallet.toLocaleString('ru');}
+function rarityRank(r){return{common:0,rare:1,epic:2,legendary:3,mythic:4}[r]||0;}
+
+function updateStats(){
+  document.getElementById('total-pulls').textContent=S.totalPulls;
+  const ov=Object.values(S.owned);
+  document.getElementById('total-cards').textContent=ov.reduce((a,b)=>a+b,0);
+  document.getElementById('unique-cards').textContent=Object.keys(S.owned).length;
+  const br=S.bestRarity;
+  const bel=document.getElementById('best-pull');
+  bel.textContent=br?RL[br]:'—';
+  if(br)bel.style.color=RC[br];
+  const pct=Math.min(100,(S.pityCount/90)*100);
+  document.getElementById('pity-bar').style.width=pct+'%';
+  document.getElementById('pity-label-val').textContent=S.pityCount+' / 90';
+}
+
+function pickRarity(){
+  if(S.pityCount>=90){S.pityCount=0;return'legendary';}
+  const roll=Math.random()*1000;let acc=0;
+  for(const[r,w]of Object.entries(RW)){acc+=w;if(roll<acc)return r;}
+  return'common';
+}
+function pickCard(rarity){const p=CARDS.filter(c=>c.rarity===rarity);return p[Math.floor(Math.random()*p.length)];}
+
+function doPull(n){
+  const cost=n===1?100:900;
+  if(S.wallet<cost){showToast('😢 Недостаточно очков!',false);return;}
+  S.wallet-=cost;
+  const results=[];
+  for(let i=0;i<n;i++){
+    const rarity=pickRarity();
+    if(rarity!=='legendary'&&rarity!=='mythic')S.pityCount++;else S.pityCount=0;
+    S.totalPulls++;
+    const card=pickCard(rarity);
+    S.owned[card.id]=(S.owned[card.id]||0)+1;
+    if(!S.bestRarity||rarityRank(rarity)>rarityRank(S.bestRarity))S.bestRarity=rarity;
+    results.push(card);
+  }
+  save();updateWallet();updateStats();
+  showPullModal(results);
+}
+
+function showPullModal(cards){
+  const grid=document.getElementById('reveal-grid');
+  grid.innerHTML='';
+  const autoflip=document.getElementById('s-autoflip')?.checked;
+  cards.forEach((card,i)=>{
+    const el=document.createElement('div');
+    el.className='flip-card';
+    el.innerHTML=`<div class="flip-inner"><div class="flip-face flip-back">🍋</div><div class="flip-face flip-front ${card.rarity}"><div class="card-emoji-big">${card.emoji}</div><div class="card-mini-name">${card.name}</div><div class="card-badge ${card.rarity}">${RL[card.rarity]}</div><div class="card-mini-pts">+${card.pts} оч.</div></div></div>`;
+    el.onclick=()=>el.classList.toggle('flipped');
+    grid.appendChild(el);
+    if(autoflip)setTimeout(()=>el.classList.add('flipped'),(i+1)*80);
+  });
+  const counts={};cards.forEach(c=>{counts[c.rarity]=(counts[c.rarity]||0)+1;});
+  const totalPts=cards.reduce((a,c)=>a+c.pts,0);
+  let sum=`<div class="ms-item"><div class="ms-val">${cards.length}</div><div class="ms-lab">карт получено</div></div><div class="ms-item"><div class="ms-val">+${totalPts}</div><div class="ms-lab">очков дропа</div></div>`;
+  for(const[r,cnt]of Object.entries(counts))sum+=`<div class="ms-item"><div class="ms-val" style="color:${RC[r]}">${cnt}</div><div class="ms-lab">${RL[r]}</div></div>`;
+  document.getElementById('modal-summary').innerHTML=sum;
+  document.getElementById('pull-modal').classList.add('on');
+  const best=cards.reduce((a,c)=>rarityRank(c.rarity)>rarityRank(a.rarity)?c:a,cards[0]);
+  if(best.rarity==='legendary'||best.rarity==='mythic')showToast(`🎉 ${best.emoji} ${best.name}!`,true);
+}
+
+function flipAll(){document.querySelectorAll('.flip-card').forEach((c,i)=>setTimeout(()=>c.classList.add('flipped'),i*60));}
+function closeModal(){document.getElementById('pull-modal').classList.remove('on');}
+
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('page-'+id).classList.add('on');
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  if(id==='collection')renderCollection('all');
+}
+
+function filterColl(f,btn){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+  renderCollection(f);
+}
+
+function renderCollection(filter){
+  const grid=document.getElementById('cards-grid');
+  const showLocked=document.getElementById('s-showlocked')?.checked!==false;
+  const showPts=document.getElementById('s-showpts')?.checked!==false;
+  const cards=CARDS.filter(c=>filter==='all'||c.rarity===filter);
+  const byRarity={};CARDS.forEach(c=>{byRarity[c.rarity]=(byRarity[c.rarity]||0)+1;});
+  const ownedByR={};Object.entries(S.owned).forEach(([id,cnt])=>{const card=CARDS.find(c=>c.id==id);if(card)ownedByR[card.rarity]=(ownedByR[card.rarity]||0)+1;});
+  document.getElementById('coll-progress').innerHTML=Object.entries(byRarity).map(([r,total])=>{
+    const got=ownedByR[r]||0;
+    return`<div class="cp-item"><div class="cp-val" style="color:${RC[r]}">${got}/${total}</div><div class="cp-lab">${RL[r]}</div></div>`;
+  }).join('')+`<div class="cp-item"><div class="cp-val" style="color:var(--lemon)">${Object.keys(S.owned).length}/${CARDS.length}</div><div class="cp-lab">Всего уник.</div></div>`;
+  grid.innerHTML=cards.map(card=>{
+    const count=S.owned[card.id]||0;
+    if(count===0&&!showLocked)return'';
+    const rc=card.rarity!=='common'?card.rarity+'-card':'';
+    return`<div class="ccard ${rc} ${count===0?'locked':''}" onclick="showDetail(${card.id})">${count>0?`<div class="c-count">×${count}</div>`:''}<div class="c-emoji">${card.emoji}</div><div class="c-name">${card.name}</div><div class="c-rarity" style="background:${RC[card.rarity]}22;color:${RC[card.rarity]}">${RL[card.rarity]}</div>${showPts?`<div class="c-pts">${card.pts} оч.</div>`:''}</div>`;
+  }).join('');
+}
+
+function showDetail(id){
+  const card=CARDS.find(c=>c.id===id);if(!card)return;
+  document.getElementById('d-emoji').textContent=card.emoji;
+  document.getElementById('d-name').textContent=card.name;
+  const badge=document.getElementById('d-badge');
+  badge.textContent=RL[card.rarity];badge.style.background=RC[card.rarity]+'22';badge.style.color=RC[card.rarity];
+  document.getElementById('d-desc').textContent=card.desc;
+  document.getElementById('d-pts').textContent=card.pts;
+  document.getElementById('d-count').textContent=S.owned[card.id]||0;
+  const pool=CARDS.filter(c=>c.rarity===card.rarity).length;
+  document.getElementById('d-chance').textContent=(RW[card.rarity]/1000/pool*100).toFixed(2)+'%';
+  document.getElementById('detail-modal').classList.add('on');
+}
+function closeDetail(){document.getElementById('detail-modal').classList.remove('on');}
+
+function buyPoints(amt){S.wallet+=amt;save();updateWallet();showToast(`+${amt.toLocaleString('ru')} очков добавлено! 🍋`,true);}
+
+function showToast(msg,gold){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast on'+(gold?' gold':'');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3000);
+}
+
+function confirmClear(){
+  if(confirm('Точно очистить всю коллекцию? Это необратимо!'))
+  {S.owned={};S.bestRarity=null;save();updateStats();showToast('Коллекция очищена',false);}
+}
+
+document.querySelectorAll('.settings-section input, .settings-section select').forEach(el=>{
+  el.addEventListener('change',()=>{
+    const b=document.getElementById('save-banner');b.classList.add('on');
+    clearTimeout(b._t);b._t=setTimeout(()=>b.classList.remove('on'),2200);
+  });
+});
+document.getElementById('s-nsfw')?.addEventListener('change',function(){if(this.checked)showToast('⚠️ NSFW контент включён',false);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeDetail();}});
+
+updateWallet();updateStats();
+</script>
+</body>
+</html>
